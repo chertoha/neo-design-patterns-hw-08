@@ -3,6 +3,18 @@ import { RendererFactory, RendererType } from "./factories/RendererFactory";
 import { Section } from "./nodes/Section";
 import { Paragraph } from "./nodes/Paragraph";
 import { List } from "./nodes/List";
+import { RenderEventPublisher } from "./RenderEventPublisher";
+import { RenderLoggerSubscriber } from "./subscribers/RenderLoggerSubscriber";
+import { SummaryCollector } from "./subscribers/SummaryCollector";
+import { PerformanceSubscriber } from "./subscribers/PerformanceSubscriber";
+
+const logger = new RenderLoggerSubscriber();
+const summary = new SummaryCollector();
+const perf = new PerformanceSubscriber();
+
+RenderEventPublisher.subscribe(logger);
+RenderEventPublisher.subscribe(summary);
+RenderEventPublisher.subscribe(perf);
 
 function createDocument(format: RendererType): string {
   const renderer = RendererFactory.create(format);
@@ -53,5 +65,8 @@ const { format, output } = {
 const content = createDocument(format);
 const renderer = RendererFactory.create(format);
 const result = renderer.wrapDocument(content);
+
+summary.printSummary();
+perf.printPerformance();
 
 output ? writeFileSync(output, result) : console.log(result);
